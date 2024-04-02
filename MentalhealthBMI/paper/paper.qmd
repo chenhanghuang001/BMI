@@ -1,0 +1,104 @@
+---
+title: "Examining the Relationship between Body Mass Index (BMI) and Life Satisfaction"
+subtitle: "Whether Individuals with Higher Life Satisfaction Tend to Have Higher BMI"
+author: 
+  - Chenhang Huang
+thanks: "Code and data are available at:  https://github.com/chenhanghuang001/BMI.git"
+date: today
+date-format: long
+abstract: "The escalating cost of living in Canada has led to heightened stress levels among the middle class, resulting in a decline in overall life satisfaction. This downward trend in life satisfaction is concerning, as it not only impacts individuals' mental and physical well-being but also contributes to the prevalence of obesity, a significant health issue with various associated risks. This study utilizes data from the Canadian Community Health Survey, 2017-2018. This study will explore the interplay between life satisfaction, BMI, and other relevant factors, shedding light on potential avenues for addressing the pressing issue of obesity and its associated health consequences in Canada."
+format: pdf
+number-sections: true
+bibliography: references.bib
+---
+
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(palmerpenguins)
+```
+
+
+# Introduction
+The high cost of living in Canada has led to increased stress for many individuals, particularly among the middle class. Canadians' life satisfaction is declining, which is a significant indicator of a country's overall happiness index. Life satisfaction not only impacts individuals' mental health but also their physical well-being. Obesity is a prevalent issue affecting people's lives, as it can lead to various health problems such as high cholesterol, hypertension, and others. Moreover, obesity may subject individuals to ridicule from peers, adversely affecting their daily lives.
+
+Body Mass Index (BMI) is a measure used to assess body weight relative to height. It is calculated by dividing a person's weight in kilograms by the square of their height in meters (BMI = weight / height^2). BMI is commonly used as a screening tool to classify individuals into categories such as underweight, normal weight, overweight, and obese. These categories are typically defined as follows:
+
+Underweight: BMI less than 18.5
+
+Normal weight: BMI between 18.5 and 24.9
+
+Overweight: BMI between 25 and 29.9
+
+Obese: BMI 30 or greater
+
+BMI provides a simple and quick method for assessing body weight and is widely used in clinical settings, public health research, and population studies to identify individuals or populations at risk of weight-related health issues such as cardiovascular disease, diabetes, and certain cancers.
+
+
+However, there are many factors contributing to obesity, such as diet, age, gender, marital status, and others. Similarly, life satisfaction is associated with these factors, including diet, age, gender, and marital status. When studying the impact of life satisfaction on BMI, it's essential to control for these influencing factors to minimize bias in estimating the effect of life satisfaction on BMI. Therefore, during the research process, it's necessary to collect information on diet, age, gender, marital status, and other relevant factors simultaneously.
+
+
+The remainder of this paper is structured as follows. @sec-data will do the data analysis, including the data source, the number of variables, and their definition. @sec-model will introduce the regression model and the corresponding assumptions. @sec-result focus on the analysis of the results of the regression. Discussion on these results are proposed in @sec-discussion. 
+
+
+
+# Data {#sec-data}
+
+I will use the Canadian Community Health Survey, 2017-2018. As the sample size is big, I randomly select 5000 observations in this study. CCHS is a nationwide survey conducted by Statistics Canada to gather information about health status, health care utilization, and health determinants among Canadians. It collects data on various health-related topics, including chronic conditions, mental health, physical activity, nutrition, smoking, alcohol consumption, and access to health care services. Thus, the mental health, personal habits will be included in the dataset, which will be used in the following anlsysis. 
+
+
+
+
+# Model
+
+The goal of our modelling strategy is twofold. Firstly,...
+
+## Model set-up
+
+
+
+### Model justification
+
+# Results
+
+
+# Discussion
+
+## First discussion point {#sec-first-point}
+
+If my paper were 10 pages, then should be be at least 2.5 pages. The discussion is a chance to show off what you know and what you learnt from all this. 
+
+## Second discussion point
+
+## Third discussion point
+
+## Weaknesses and next steps
+
+Weaknesses and next steps should also be included.
+
+\newpage
+
+\appendix
+
+# Appendix {-}
+
+
+# Additional data details
+
+# Model details {#sec-model-details}
+
+## Posterior predictive check
+
+
+## Diagnostics
+
+
+\newpage
+
+
+# References
+
+

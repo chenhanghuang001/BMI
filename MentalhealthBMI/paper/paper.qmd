@@ -1,12 +1,12 @@
 ---
 title: "Examining the Relationship between Body Mass Index (BMI) and Life Satisfaction"
-subtitle: "Whether Individuals with Higher Life Satisfaction Tend to Have Higher BMI"
+subtitle: "Individuals with Higher Life Satisfaction Tend to Have Lower BMI"
 author: 
   - Chenhang Huang
 thanks: "Code and data are available at:  https://github.com/chenhanghuang001/BMI.git"
 date: today
 date-format: long
-abstract: "The escalating cost of living in Canada has led to heightened stress levels among the middle class, resulting in a decline in overall life satisfaction. This downward trend in life satisfaction is concerning, as it not only impacts individuals' mental and physical well-being but also contributes to the prevalence of obesity, a significant health issue with various associated risks. This study utilizes data from the Canadian Community Health Survey, 2017-2018. This study will explore the interplay between life satisfaction, BMI, and other relevant factors, shedding light on potential avenues for addressing the pressing issue of obesity and its associated health consequences in Canada."
+abstract: "Life satisfaction not only affects an individual's mood but also has an impact on their physical health. This study conducted explanatory and empirical analysis using the 2017-2018 Canadian Community Health Survey (CCHS) data through a Bayesian regression model. The results indicate that higher levels of life satisfaction are associated with lower average BMI values. Therefore, it is advisable to strive for satisfaction in daily life and maintain a positive attitude towards life, which can help reduce the likelihood of weight gain and obesity."
 format: pdf
 number-sections: true
 bibliography: references.bib
@@ -18,7 +18,14 @@ bibliography: references.bib
 #| message: false
 
 library(tidyverse)
-library(palmerpenguins)
+library(readr)
+library(here)
+library(gridExtra)
+library(kableExtra)
+library(ggplot2)
+library(modelsummary)
+library(rstanarm)
+library(knitr)
 ```
 
 
@@ -37,8 +44,7 @@ Obese: BMI 30 or greater
 
 BMI provides a simple and quick method for assessing body weight and is widely used in clinical settings, public health research, and population studies to identify individuals or populations at risk of weight-related health issues such as cardiovascular disease, diabetes, and certain cancers.
 
-
-However, there are many factors contributing to obesity, such as diet, age, gender, marital status, and others. Similarly, life satisfaction is associated with these factors, including diet, age, gender, and marital status. When studying the impact of life satisfaction on BMI, it's essential to control for these influencing factors to minimize bias in estimating the effect of life satisfaction on BMI. Therefore, during the research process, it's necessary to collect information on diet, age, gender, marital status, and other relevant factors simultaneously.
+The estimand in this paper is the effect of the life satisfaction on the individual's body mass index. However, there are many factors contributing to obesity, such as diet, age, gender, marital status, and others. Similarly, life satisfaction is associated with these factors, including diet, age, gender, and marital status. When studying the impact of life satisfaction on BMI, it's essential to control for these influencing factors to minimize bias in estimating the effect of life satisfaction on BMI. Therefore, during the research process, it's necessary to collect information on diet, age, gender, marital status, and other relevant factors simultaneously.  
 
 
 The remainder of this paper is structured as follows. @sec-data will do the data analysis, including the data source, the number of variables, and their definition. @sec-model will introduce the regression model and the corresponding assumptions. @sec-result focus on the analysis of the results of the regression. Discussion on these results are proposed in @sec-discussion. 
@@ -47,56 +53,283 @@ The remainder of this paper is structured as follows. @sec-data will do the data
 
 # Data {#sec-data}
 
-I will use the Canadian Community Health Survey, 2017-2018. As the sample size is big, I randomly select 5000 observations in this study. CCHS is a nationwide survey conducted by Statistics Canada to gather information about health status, health care utilization, and health determinants among Canadians. It collects data on various health-related topics, including chronic conditions, mental health, physical activity, nutrition, smoking, alcohol consumption, and access to health care services. Thus, the mental health, personal habits will be included in the dataset, which will be used in the following anlsysis. 
+
+Data analysis is performed in R [@citeR], and I also use some other package to help me plot the figrues and build the tables.  such as readr [@readrR], ggplot2 [@ggplot2R], tidyverse [@tidyverseR],knitr [knitrR], modelsummary [@modelsummaryR]. Data comes from the Canadian Community Health Survey (CCHS) [@statcan2018].
+
+
+## Data source and clean
+
+The CCHS selects a sample of 130,000 respondents every two years: 120,000 respondents covering the population aged 18 and older, and 10,000 respondents covering the population aged 12 to 17. The CCHS manual provides detailed definitions and measurement methods for each variable. In this study, we selected BMI and life satisfaction as the response variable and predictor, respectively. BMI is calculated based on weight and height. Due to the large number of observations in the original data, we retained only approximately 2000 observations during the data cleaning process. After disregarding observations with missing values, the final dataset consists of 1709 observations and 6 variables.
+
+
+## Measurements
+
+The CCHS employs a multi-stage sample allocation strategy to distribute the sample relatively evenly across the provinces and territories. For each age group (18 and older, 12 to 17), initially, 0.75 of the allocation weight is used to distribute the sample among the provinces based on their respective population sizes. Then, using 0.35 of the allocation weight, the sample for each province is further allocated within the province based on its population size.
+
+The CCHS sample is selected using two different frames: the Area frame and the Canada Child Tax Benefit (CCTB) frame. The "Area" frame is used to select residential samples targeting the population aged 18 and older. During data collection, all members of the household are listed, and individuals aged 18 and older are automatically selected using various selection probabilities based on age and household composition. The CCTB frame is utilized for sampling the population aged 12 to 17. When selecting CCHS residential samples, the sampling scheme of the LFS must be taken into consideration. The LFS plan is a complex two-stage stratified design. Initially, the LFS employs a probability proportional to size (PPS) sampling method to select clusters, and then a systematic sampling of households within the clusters is used to select the final sample. During the selection process, the sample size is expanded to account for non-response and units outside the coverage scope (such as vacant dwellings, institutions, children ineligible due to age or death, etc.) [@statcan2018].
+
+
+
+## Explantory data analysis
+
+The variable "life satisfaction" consists of 3 levels: "Satisfied", "Neither satisfied nor dissatisfied", and "Dissatisfied". Among these levels, "Satisfied" has the largest proportion, accounting for approximately 91% of individuals who are satisfied with their current lives, while around 5% of individuals are dissatisfied with their lives, as shown in @tbl-table1. @fig-fig1 illustrates the relationship between life satisfaction and BMI. It shows that individuals satisfied with their lives have a slight right skewness in BMI distribution, with only a small proportion having excessively high BMI values. However, among those dissatisfied with their lives, some individuals have a BMI exceeding 40, significantly higher than other dissatisfied individuals.
+
+Approximately 28% of individuals rent their dwelling, as indicated in @tbl-table1, and no significant differences in BMI were observed between those who rent and those who do not, as shown in @fig-fig2. In terms of marital status, married individuals have a smaller proportion of individuals with excessive BMI compared to other groups, as depicted in @fig-fig3. Comparing individual income and BMI, it appears that individuals with lower incomes are more likely to have a higher BMI, as illustrated in @fig-fig4. Regarding gender differences, females have a higher probability of having both smaller and larger BMIs compared to males, as shown in @fig-fig5. The sampled data consists of 861 females and 848 males, with a gender ratio close to 1:1, indicating that the data collected through random sampling has the representatives of the Canadian population.
+
+```{r}
+#| label: fig-fig1
+#| fig-cap:  The distribution of BMI grouped by life satisficaiton
+#| echo: false
+#| warning: false
+#| message: false
+
+cchs = read_csv(here::here("data/analysis_data/analysis_data.csv"))
+
+cchs = cchs |> mutate_if(is.character, as.factor)
+
+
+cchs |> ggplot(aes(x = BMI, fill = lifesatisfication)) +
+  geom_histogram(alpha=0.5, position="identity") + 
+  theme_minimal() +
+    labs(
+    x = "BMI",
+    y = "Number of observations",
+    fill = "Life satisfication"
+  ) 
+
+```
+
+
+
+```{r}
+#| label: fig-fig2
+#| fig-cap:  The distribution of BMI grouped by rent a house 
+#| echo: false
+#| warning: false
+#| message: false
+
+
+cchs |> ggplot(aes(x = BMI, fill = rent)) +
+  geom_histogram(alpha=0.5, position="identity") + 
+  theme_minimal() +
+    labs(
+    x = "BMI",
+    y = "Number of observations",
+    fill = "rent a house"
+  ) 
+
+```
+
+```{r}
+#| label: fig-fig3
+#| fig-cap:  The distribution of BMI grouped by marrital status
+#| echo: false
+#| warning: false
+#| message: false
+
+cchs |> ggplot(aes(x = BMI, fill = marry)) +
+  geom_histogram(alpha=0.5, position="identity") + 
+  theme_minimal() +
+    labs(
+    x = "BMI",
+    y = "Number of observations",
+    fill = "Marital status"
+  ) 
+
+```
+
+
+```{r}
+#| label: fig-fig4
+#| fig-cap:  The distribution of BMI grouped by income levels
+#| echo: false
+#| warning: false
+#| message: false
+
+
+
+cchs |> ggplot(aes(x = BMI, fill = income)) +
+  geom_histogram(alpha=0.5, position="identity") + 
+  theme_minimal() +
+    labs(
+    x = "BMI",
+    y = "Number of observations",
+    fill = "Personal income"
+  ) 
+
+```
+
+
+```{r}
+#| label: fig-fig5
+#| fig-cap:  The distribution of BMI grouped by gender
+#| echo: false
+#| warning: false
+#| message: false
+
+
+cchs |> ggplot(aes(x = BMI, fill = gender)) +
+  geom_histogram(alpha=0.5, position="identity") + 
+  theme_minimal() +
+    labs(
+    x = "BMI",
+    y = "Number of observations",
+    fill = "Gender"
+  ) 
+
+```
+
+
+```{r}
+#| label: tbl-table1
+#| tbl-cap: Summary Statistic
+#| echo: false
+#| warning: false
+
+cchs  %>% datasummary_skim(type = "categorical")
+```
 
 
 
 
-# Model
+# Methods and Models {#sec-model}
 
-The goal of our modelling strategy is twofold. Firstly,...
+Here I will introduce the Bayesian anlaysi model used in this paper
+
 
 ## Model set-up
 
+From the histogram in @fig-fig1, it appears that the group of people who are dissatisfied with life are more likely to experience overweight. But we cannot discern the effect of life satisfaction on BMI merely from the graph. Here, I construct a simple linear regression model to further investigate the relationship between life satisfaction and BMI. Taking into account other factors such as income, marital status, living environment, etc., that may affect BMI, I also develop a multiple linear regression model with all explanatory variables included.
 
 
-### Model justification
+### Simple Linear Regression (SLR)
 
-# Results
+Define $y_i$ as the BMI for individual i, then the SLR model is: 
+
+\begin{align} 
+y_i|\mu_i, \sigma &\sim \mbox{Normal}(\mu_i, \sigma) \\
+\mu_i &= \beta_0 + \beta_1 lifestaisfication_i + \gamma_i\\
+\beta_0 &\sim \mbox{Normal}(0, 25) \\
+\beta_1 &\sim \mbox{Normal}(0, 10) \\
+\sigma &\sim \mbox{Exponential}(1)
+\end{align}
+
+We run the model in R [@citeR] using the `rstanarm` package of @rstanarm. We use the default priors from `rstanarm`.
 
 
-# Discussion
+### Multiple Linear Regression (MLR)
 
-## First discussion point {#sec-first-point}
+Include other predictors in the model, the MLR is in the following: 
 
-If my paper were 10 pages, then should be be at least 2.5 pages. The discussion is a chance to show off what you know and what you learnt from all this. 
+\begin{align} 
+y_i|\mu_i, \sigma &\sim \mbox{Normal}(\mu_i, \sigma) \\
+\mu_i &= \beta_0 + \beta_1 lifestaisfication_i + \beta_2 income_i + \beta_3 gender_i + \beta_4 marry_i+ \beta_5 rent_i \\
+\beta_0 &\sim \mbox{Normal}(0, 25) \\
+\beta_1 &\sim \mbox{Normal}(0, 2.5) \\
+\beta_2 &\sim \mbox{Normal}(0, 2.5) \\
+\beta_3 &\sim \mbox{Normal}(0, 2.5) \\
+\beta_4 &\sim \mbox{Normal}(0, 2.5) \\
+\beta_4 &\sim \mbox{Normal}(0, 2.5) \\
+\sigma &\sim \mbox{Exponential}(1)
+\end{align}
 
-## Second discussion point
 
-## Third discussion point
+### Model Justification
 
-## Weaknesses and next steps
+We anticipated that individuals dissatisfied with life would have higher BMI. Thus, in the simple linear regression (SLR) model, we only considered the effect of life satisfaction on BMI to compare the differences in BMI among different groups of life satisfaction. Additionally, we wanted to investigate the differences in BMI among different groups of life satisfaction when including control variables. Therefore, multiple linear regression (MLR) can eliminate potential omitted variable bias in the SLR model.
 
-Weaknesses and next steps should also be included.
+# Results {#sec-result}
+
+@tbl-table2 displays the differences in BMI among different life satisfaction groups. The reference group is the dissatisfied level group. The coefficient for the "Neither satisfied nor dissatisfied" group is -1.173, indicating that individuals in this group have a BMI value 1.173 units smaller than those in the dissatisfied level group. Conversely, the "Satisfied" group has a BMI value 1.822 units smaller than the dissatisfied level group. These results demonstrate a relationship between life satisfaction and BMI: as life satisfaction increases, BMI tends to decrease.
+
+
+
+```{r}
+#| label: tbl-table2
+#| tbl-cap: The basic Regression results without control 
+#| echo: false
+#| warning: false
+
+first_model <- readRDS(here::here("models/first_model.rds"))
+
+modelsummary(
+  list(
+    "BMI" = first_model
+  ), statistic = "mad"
+)
+
+```
+
+
+@tbl-table3 presents the results of the multiple linear regression (MLR) after considering the influence of other control variables. In the MLR model, holding other predictors constant, individuals in the "Neither satisfied nor dissatisfied" group have a BMI value 1.154 units smaller than those in the dissatisfied level group, while individuals in the "Satisfied" group have a BMI value 1.739 units smaller than the dissatisfied level group. The similarity between the simple linear regression (SLR) and MLR model results indicates that these models are robust in estimating the relationship between life satisfaction and BMI.
+
+@tbl-table3 can be used to analyze the influence of other factors on BMI. The coefficients for income are all negative, indicating that individuals in the income range of 20000~40000 tend to have higher BMI relative to other income levels. Regarding gender, males have a higher average BMI compared to females. In terms of marital status, single individuals have lower BMI than those in other marital statuses, while individuals in less fortunate marital statuses, such as Widowed/Divorced/Separated, have higher average BMI than other groups. Lastly, we observe that individuals who rent tend to have higher average BMI than those who own houses.
+
+
+```{r}
+#| label: tbl-table3
+#| tbl-cap: The Regression results with control 
+#| echo: false
+#| warning: false
+
+second_model <- readRDS(here::here("models/second_model.rds"))
+
+modelsummary(
+  list(
+    "BMI" = second_model
+  ), statistic = "mad"
+)
+
+```
+
+Finally, in @fig-fig6, the credible intervals show that the satisfied life satisfaction group's interval is to the left of 0 and does not include 0. This result indicates that individuals with satisfied life satisfaction have lower BMI values, which is advantageous for reducing the occurrence of obesity. Additionally, for individuals with a marital status of single, their credible interval is also to the left of 0, indicating that the average BMI of single individuals is lower than average.
+
+
+```{r}
+#| label: fig-fig6
+#| fig-cap: Credible intervals for the regression results with control 
+#| warning: false
+#| message: false
+#| echo: false
+
+
+modelplot(second_model, conf_level = 0.95) +
+  labs(x = "95 Percent Credibility Interval")
+
+```
+
+
+
+# Discussion {#sec-discussion}
+
+## Key Findings
+
+From the exploratory data analysis (EDA) and the results tables, we observe a negative correlation between BMI and life satisfaction. As life satisfaction increases, the average BMI tends to decrease, and this result demonstrates robustness as it remains relatively stable even with the introduction of other variables. There are several possible reasons why individuals with higher life satisfaction tend to have smaller BMIs. Firstly, individuals with higher life satisfaction may prioritize their physical health, thereby avoiding overeating and other behaviors that lead to weight gain and associated health issues. Secondly, people may experience greater satisfaction with life due to their body image, which could contribute to maintaining a lower BMI. Therefore, the relationship between life satisfaction and BMI may be bidirectional, and from this study alone, we cannot establish a causal relationship between life satisfaction and BMI.
+
+### Marital status will influence the relationship between BMI and life satisfaction
+
+Single individuals often tend to be happier, thus having lower BMIs. Marriage often involves issues such as managing relationships and caring for children, which can sometimes bring worries. On the other hand, single individuals do not have these concerns and can lead simpler and happier lives, resulting in higher life satisfaction. The worst-off marital status group is the Widowed/Divorced/Separated group. These individuals have lost normal marital relationships, which is often a difficult experience regardless of the reasons behind it. Therefore, these individuals may experience a decrease in life satisfaction, lack self-control, and engage in overeating, leading to weight gain.
+
+
+
+### Income between $20000-$40000 will have higher BMI
+
+Individuals with incomes in the $20,000 to $40,000 range tend to have higher BMIs compared to other income levels. This group of individuals may only earn enough to meet basic needs, and in order to save money, they may choose inexpensive but high-calorie foods such as fries and burgers. Consuming these types of foods may increase the risk of weight gain.
+
+
+
+## Weaknesses and Limitations
+
+This study investigates the impact of life satisfaction on BMI, with the results indicating that dissatisfied individuals are more likely to experience obesity. However, several weaknesses must be acknowledged. Firstly, the measurement of life satisfaction is challenging, as the study only provides three levels and cannot adequately capture the differences in individual life satisfaction. Secondly, in selecting prior distributions for the simple linear regression (SLR) and multiple linear regression (MLR) models, there is a lack of sufficient material to narrow down the range of parameter estimates.
+
+
+## Future Steps
+
+In future research, life satisfaction could be further subdivided into finer categories, such as using a scale of 1-10 to measure life satisfaction, and appropriate questionnaires could be designed for this purpose. Regarding instances where model assumptions are not met, I will attempt simple transformations of the output variable to ensure that the assumptions of the regression model hold. The data used in this study are from the 2017-2018 CCHS dataset, and considering the changes in lifestyle habits post-COVID-19 in 2020, such as the widespread adoption of work from home arrangements, exploring the relationship between life satisfaction and BMI in the latest data will be one of the future research steps.
+
 
 \newpage
 
-\appendix
-
-# Appendix {-}
-
-
-# Additional data details
-
-# Model details {#sec-model-details}
-
-## Posterior predictive check
-
-
-## Diagnostics
-
-
-\newpage
 
 
 # References

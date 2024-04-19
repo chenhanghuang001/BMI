@@ -1,32 +1,34 @@
 #### Preamble ####
-# Purpose: Models... [...UPDATE THIS...]
-# Author: Rohan Alexander [...UPDATE THIS...]
-# Date: 11 February 2023 [...UPDATE THIS...]
-# Contact: rohan.alexander@utoronto.ca [...UPDATE THIS...]
-# License: MIT
-# Pre-requisites: [...UPDATE THIS...]
-# Any other information needed? [...UPDATE THIS...]
+# Purpose: Models build 
+# Author: Chenhang Huang
+# Date: 21 Mar 2024
+# Contact: chenhang.huang@mail.utoronto.ca
+# License: UOT
+# Pre-requisites: no
 
 
 #### Workspace setup ####
 library(tidyverse)
 library(rstanarm)
+library(readr)
+
+
 
 #### Read data ####
-analysis_data <- read_csv("data/analysis_data/analysis_data.csv")
+analysis_data <- read_csv("data/analysis_data.csv")
 
-### Model data ####
+analysis_data <- analysis_data |> mutate_if(is.character, as.factor)
+
+### Model 1 ####
 first_model <-
   stan_glm(
-    formula = flying_time ~ length + width,
+    formula = BMI ~ lifesatisfication,
     data = analysis_data,
     family = gaussian(),
-    prior = normal(location = 0, scale = 2.5, autoscale = TRUE),
-    prior_intercept = normal(location = 0, scale = 2.5, autoscale = TRUE),
-    prior_aux = exponential(rate = 1, autoscale = TRUE),
+    prior = normal(location = 0, scale = 10, autoscale = TRUE),
+    prior_intercept = normal(location = 0, scale = 25, autoscale = TRUE),
     seed = 853
   )
-
 
 #### Save model ####
 saveRDS(
@@ -34,4 +36,19 @@ saveRDS(
   file = "models/first_model.rds"
 )
 
+### Model 2 ####
+second_model <-
+  stan_glm(
+    formula = BMI ~ lifesatisfication + income +gender + marry + rent,
+    data = analysis_data,
+    family = gaussian(),
+    prior = normal(location = 0, scale = 2.5, autoscale = TRUE),
+    prior_intercept = normal(location = 0, scale = 25, autoscale = TRUE),
+    seed = 853
+  )
 
+#### Save model ####
+saveRDS(
+  second_model,
+  file = "models/second_model.rds"
+)

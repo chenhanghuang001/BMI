@@ -1,11 +1,11 @@
 #### Preamble ####
-# Purpose: Downloads and saves the data 
+# Purpose: Downloads and saves the data
 # Author: Chenhang Huang
 # Date: 21 Mar 2024
 # Contact: chenhang.huang@mail.utoronto.ca
 # License: UOT
 # Pre-requisites: no
-# data source: 
+# data source: https://www23.statcan.gc.ca/imdb/p3Instr.pl?Function=getInstrumentList&Item_Id=839130&UL=AV
 
 
 
@@ -18,7 +18,7 @@ cchs = read.csv("data/raw_data/cchs-82M0013-E-2017-2018-Annual.csv",header = TRU
 set.seed(302)
 
 
-sampled_data <- cchs[sample(nrow(cchs), 5000), ]
+sampled_data <- cchs[sample(nrow(cchs), 2000), ]
 
 the_raw_data <- sampled_data |>select(GENDVSWL,INCDGHH,DHH_SEX,DHHGMS,DHH_OWN,HWTDGCOR) |> na.omit()
 

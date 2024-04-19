@@ -1,30 +1,30 @@
-# Starter folder
+# Examining the Relationship between Body Mass Index (BMI) and Life Satisfaction
 
 ## Overview
 
-This repo provides students with a foundation for their own projects associated with *Telling Stories with Data*. You do not need every aspect for every paper and you should delete aspects that you do not need.
+This repo provides how to reproduce my work about the "Examining the Relationship between Body Mass Index (BMI) and Life Satisfaction"
 
 
 ## File Structure
 
 The repo is structured as:
 
--   `data/raw_data` contains the raw data as obtained from X.
--   `data/analysis_data` contains the cleaned dataset that was constructed.
--   `model` contains fitted models. 
--   `other` contains relevant literature, details about LLM chat interactions, and sketches.
--   `paper` contains the files used to generate the paper, including the Quarto document and reference bibliography file, as well as the PDF of the paper. 
--   `scripts` contains the R scripts used to simulate, download and clean data.
+data/raw_data contains the raw data downloaded from website
+data/analysis_data contains the cleaned dataset 
+
+other/llm contains the llm usage details
+other/sketches contains the sketches of the dataset and some plots. 
+
+
+Paper includes the reports and the files utilized in its creation, comprising the Quarto document , the reference bibliography file, along with the PDF output of the paper.
+
+
+The scripts folder contains the R scripts used to simulation, download, clean data,  test and replication code. 
+
+models/first_model.rds  is the regression results of the Simple linear regression. 
+models/second_model.rds  is the regression results of the multiple linear regression. 
 
 
 ## Statement on LLM usage
 
-Aspects of the code were written with the help of the auto-complete tool, Codriver. The abstract and introduction were written with the help of ChatHorse and the entire chat history is available in inputs/llms/usage.txt.
-
-## Some checks
-
-- [ ] Change the rproj file name so that it's not starter_folder.Rproj
-- [ ] Change the README title so that it's not Starter folder
-- [ ] Remove files that you're not using
-- [ ] Update comments in R scripts
-- [ ] Remove this checklist
+I ask for the chatGPT to help me introduce the defintion an BMI, as well as how to use the BMI to define overweight.  The entire chat history is available in inputs/llms/usage.txt.
